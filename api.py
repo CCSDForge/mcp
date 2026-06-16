@@ -1,14 +1,7 @@
 # api.py
+import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from mcp.server.sse import SseServerTransport
-from core.mcp import mcp
-
-# Import des tools pour les enregistrer auprès de mcp
-import hal_tools.hal_search_authors
-import hal_tools.hal_search_author_publications
-import hal_tools.hal_get_publication_stats_by_structure
-import hal_tools.hal_get_portal_distribution_with_files
 
 # Import des fonctions HAL pour les endpoints REST
 from hal_api.search_portal_distribution import search_portal_distribution
@@ -17,21 +10,6 @@ from hal_api.search_author_publications import search_author_publications
 from hal_api.search_authors import search_authors
 
 app = FastAPI(title="HAL MCP HTTP API")
-
-# ── Transport MCP SSE ────────────────────────────────────────────────────────
-
-sse = SseServerTransport("/mcp/messages")
-
-@app.get("/mcp/sse")
-async def sse_endpoint(request: Request):
-    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
-        await mcp.run(streams[0], streams[1], mcp.create_initialization_options())
-
-@app.post("/mcp/messages")
-async def messages_endpoint(request: Request):
-    await sse.handle_post_message(request.scope, request.receive, request._send)
-
-# ── Modèles ──────────────────────────────────────────────────────────────────
 
 class PortalDistributionParams(BaseModel):
     struct_ids: int | list[int]

@@ -8,4 +8,4 @@ import hal_tools.hal_get_lab_publications
 
 # lancer le serveur 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport="streamable-http")
