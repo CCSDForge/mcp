@@ -6,6 +6,7 @@ import hal_tools.hal_search_author_publications
 import hal_tools.hal_search_authors
 import hal_tools.hal_get_lab_publications
 
-# lancer le serveur 
+app = mcp.streamable_http_app()
+
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")
