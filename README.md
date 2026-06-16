@@ -7,7 +7,7 @@ source ENVIRONNEMENT/bin/activate
 ```bash
 cd ~/....
 ```
-# Se placer dans le dossier du projet
+# Lancer le serveur
 ```bash
 uvicorn server:app --host 0.0.0.0 --port 8000
 ```
