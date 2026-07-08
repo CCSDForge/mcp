@@ -3,6 +3,14 @@
 ```bash
 source ENVIRONNEMENT/bin/activate
 ```
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+# Dans votre fichier .env
+MCP_JWT_SECRET=....
+
 # Se placer dans le dossier du projet
 ```bash
 cd ~/....
@@ -28,4 +36,11 @@ curl -X POST http://localhost:8000/mcp \
   -H "mcp-session-id: Votre session-id" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
 ```
-
+# Lire le tools/list avec authentification 
+```bash
+curl -s -X POST http://localhost:8000/mcp \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJZdXRvbmciLCJleHAiOjE3OTExMTMxMzh9.MVglZhB9JnFATAFZ5x1O2A2H5lW4gg2xlJNJZrfCtd4" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | jq
+```
