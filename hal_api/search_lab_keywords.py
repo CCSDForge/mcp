@@ -1,37 +1,26 @@
 import aiohttp
-from datetime import datetime
 
 
 BASE_URL = "https://api.archives-ouvertes.fr/search/"
 
 
-async def search_lab_publications(
+async def search_lab_keywords(
     structure_id: str,
-    start_date: str,
-    end_date: str,
+    year: int,
     limit: int = 30
 ) -> dict:
     """
-    Agrégation Solr des mots-clés HAL sur une période donnée.
+    Recherche les mots-clés agrégés d'une structure HAL.
 
-    start_date et end_date au format YYYY-MM-DD.
-
-    Exemple :
-    start_date="2025-01-01"
-    end_date="2025-12-31"
+    Solr effectue directement le comptage via les facettes.
+    Aucun document individuel n'est récupéré.
     """
-
-    # Vérification format date
-    datetime.strptime(start_date, "%Y-%m-%d")
-    datetime.strptime(end_date, "%Y-%m-%d")
-
 
     params = {
         "q": "*:*",
-
         "fq": [
             f"structId_i:{structure_id}",
-            f"producedDate_tdate:[{start_date}T00:00:00Z TO {end_date}T23:59:59Z]"
+            f"producedDateY_i:{year}"
         ],
 
         # Agrégation Solr
@@ -40,7 +29,7 @@ async def search_lab_publications(
         "facet.limit": limit,
         "facet.sort": "count",
 
-        # aucun document
+        # Ne retourne aucune publication
         "rows": 0,
 
         "wt": "json"
@@ -58,11 +47,22 @@ async def search_lab_publications(
 
             if resp.status != 200:
                 return {
-                    "error": await resp.text()
+                    "error": f"Erreur HAL {resp.status}: {await resp.text()}"
                 }
+
 
             data = await resp.json()
 
+
+    # Nombre total de publications
+    total_publications = data["response"]["numFound"]
+
+
+    # Solr retourne :
+    # [
+    #   "mot1", 120,
+    #   "mot2", 90
+    # ]
 
     facet_values = (
         data
@@ -72,16 +72,15 @@ async def search_lab_publications(
     )
 
 
-    keywords = {}
+    keyword_aggregation = {}
 
     for i in range(0, len(facet_values), 2):
-        keywords[facet_values[i]] = facet_values[i + 1]
+        keyword_aggregation[facet_values[i]] = facet_values[i + 1]
 
 
     return {
         "structure_id": structure_id,
-        "start_date": start_date,
-        "end_date": end_date,
-        "num_found": data["response"]["numFound"],
-        "keyword_aggregation": keywords
+        "year": year,
+        "total_publications": total_publications,
+        "keyword_aggregation": keyword_aggregation
     }
