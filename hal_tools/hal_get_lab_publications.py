@@ -1,5 +1,5 @@
 from core.mcp import mcp
-from hal_api import search_lab_keywords
+from hal_api import search_lab_publications
 
 
 @mcp.tool()
@@ -26,7 +26,7 @@ async def hal_get_lab_publications(
     utiliser d'abord search_structure pour obtenir structure_id.
     """
 
-    return await search_lab_keywords(
+    return await search_lab_publications(
         structure_id,
         start_date,
         end_date

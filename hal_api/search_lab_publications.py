@@ -5,7 +5,7 @@ from datetime import datetime
 BASE_URL = "https://api.archives-ouvertes.fr/search/"
 
 
-async def search_lab_keywords(
+async def search_lab_publications(
     structure_id: str,
     start_date: str,
     end_date: str,
