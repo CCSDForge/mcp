@@ -1,103 +1,87 @@
 import aiohttp
-from collections import Counter
+from datetime import datetime
+
 
 BASE_URL = "https://api.archives-ouvertes.fr/search/"
 
 
-async def search_lab_publications(
+async def search_lab_keywords(
     structure_id: str,
-    year: int,
-    rows: int = 1000
+    start_date: str,
+    end_date: str,
+    limit: int = 30
 ) -> dict:
     """
-    Récupère toutes les publications HAL d'une structure pour une année
-    donnée et calcule la fréquence des mots-clés.
+    Agrégation Solr des mots-clés HAL sur une période donnée.
 
-    La pagination permet de parcourir tous les résultats HAL.
-    Le LLM ne reçoit jamais les publications individuelles,
-    uniquement les statistiques agrégées.
+    start_date et end_date au format YYYY-MM-DD.
+
+    Exemple :
+    start_date="2025-01-01"
+    end_date="2025-12-31"
     """
 
-    counter = Counter()
-    start = 0
-    total = None
+    # Vérification format date
+    datetime.strptime(start_date, "%Y-%m-%d")
+    datetime.strptime(end_date, "%Y-%m-%d")
+
+
+    params = {
+        "q": "*:*",
+
+        "fq": [
+            f"structId_i:{structure_id}",
+            f"producedDate_tdate:[{start_date}T00:00:00Z TO {end_date}T23:59:59Z]"
+        ],
+
+        # Agrégation Solr
+        "facet": "true",
+        "facet.field": "keyword_s",
+        "facet.limit": limit,
+        "facet.sort": "count",
+
+        # aucun document
+        "rows": 0,
+
+        "wt": "json"
+    }
+
 
     async with aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=60)
     ) as session:
 
-        while True:
+        async with session.get(
+            BASE_URL,
+            params=params
+        ) as resp:
 
-            params = {
-                "q": "*:*",
-                "fq": [
-                    f"structId_i:{structure_id}",
-                    f"producedDateY_i:{year}"
-                ],
-                "fl": "keyword_s",
-                "rows": rows,
-                "start": start,
-                "wt": "json",
-                "sort": "docid asc"
-            }
+            if resp.status != 200:
+                return {
+                    "error": await resp.text()
+                }
 
-            async with session.get(BASE_URL, params=params) as resp:
-
-                if resp.status != 200:
-                    return {
-                        "error": f"Erreur HAL {resp.status}: {await resp.text()}"
-                    }
-
-                data = await resp.json()
+            data = await resp.json()
 
 
-            response = data["response"]
-
-            if total is None:
-                total = response["numFound"]
-
-
-            docs = response["docs"]
-
-            if not docs:
-                break
+    facet_values = (
+        data
+        .get("facet_counts", {})
+        .get("facet_fields", {})
+        .get("keyword_s", [])
+    )
 
 
-            for doc in docs:
+    keywords = {}
 
-                keywords = doc.get("keyword_s", [])
-
-                if isinstance(keywords, str):
-                    keywords = [keywords]
-
-
-                for kw in keywords:
-
-                    kw = kw.strip().lower()
-
-                    if kw:
-                        counter[kw] += 1
-
-
-            start += len(docs)
-
-
-            # Toutes les publications ont été traitées
-            if start >= total:
-                break
+    for i in range(0, len(facet_values), 2):
+        keywords[facet_values[i]] = facet_values[i + 1]
 
 
     return {
         "structure_id": structure_id,
-        "year": year,
-        "num_found": total or 0,
-        "total_keywords": len(counter),
-
-        "top_keywords": [
-            {
-                "keyword": kw,
-                "count": count
-            }
-            for kw, count in counter.most_common(30)
-        ]
+        "start_date": start_date,
+        "end_date": end_date,
+        "num_found": data["response"]["numFound"],
+        "keyword_aggregation": keywords
     }

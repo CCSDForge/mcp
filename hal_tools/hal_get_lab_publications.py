@@ -1,41 +1,33 @@
 from core.mcp import mcp
-from hal_api import search_lab_publications
+from hal_api import search_lab_keywords
 
 
 @mcp.tool()
 async def hal_get_lab_publications(
     structure_id: str,
-    year: int
+    start_date: str,
+    end_date: str
 ) -> dict:
     """
-    Analyse les thématiques de recherche d'une structure HAL.
+    Analyse les thèmes de recherche d'une structure HAL.
+
+    Les dates doivent être au format YYYY-MM-DD.
+
+    Exemple :
+    start_date="2025-01-01"
+    end_date="2025-12-31"
 
     IMPORTANT :
-    - Ce tool analyse toutes les publications HAL correspondant
-      aux critères.
-    - Il ne travaille jamais sur un échantillon.
-    - La pagination HAL est automatique jusqu'au dernier document.
-    - Le résultat retourné est une agrégation des mots-clés,
-      pas la liste des publications.
+    - L'API Solr réalise directement l'agrégation des mots-clés.
+    - Aucun document individuel n'est envoyé au LLM.
+    - keyword_aggregation contient déjà les comptages calculés.
 
-    WORKFLOW :
-    1. Si l'utilisateur donne un nom de laboratoire ou structure,
-       utiliser d'abord search_structure pour obtenir structure_id.
-    2. Utiliser ensuite ce tool avec l'identifiant HAL numérique.
-
-    Retour :
-    - num_found : nombre total de publications analysées
-    - top_keywords : 30 mots-clés les plus fréquents
+    Si l'utilisateur donne uniquement le nom d'une structure,
+    utiliser d'abord search_structure pour obtenir structure_id.
     """
 
-    result = await search_lab_publications(
-        structure_id=structure_id,
-        year=year
+    return await search_lab_keywords(
+        structure_id,
+        start_date,
+        end_date
     )
-
-
-    if "error" in result:
-        return result
-
-
-    return result
