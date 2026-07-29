@@ -3,35 +3,39 @@ from hal_api import search_lab_publications
 
 
 @mcp.tool()
-async def hal_get_lab_publications(structure_id: str, year: int) -> dict:
+async def hal_get_lab_publications(
+    structure_id: str,
+    year: int
+) -> dict:
     """
-Analyse les mots-clés des publications HAL.
+    Analyse les thématiques de recherche d'une structure HAL.
 
-IMPORTANT
+    IMPORTANT :
+    - Ce tool analyse toutes les publications HAL correspondant
+      aux critères.
+    - Il ne travaille jamais sur un échantillon.
+    - La pagination HAL est automatique jusqu'au dernier document.
+    - Le résultat retourné est une agrégation des mots-clés,
+      pas la liste des publications.
 
-Ce tool analyse TOUJOURS l'intégralité des publications
-renvoyées par l'API HAL.
+    WORKFLOW :
+    1. Si l'utilisateur donne un nom de laboratoire ou structure,
+       utiliser d'abord search_structure pour obtenir structure_id.
+    2. Utiliser ensuite ce tool avec l'identifiant HAL numérique.
 
-Il n'utilise jamais un échantillon.
+    Retour :
+    - num_found : nombre total de publications analysées
+    - top_keywords : 30 mots-clés les plus fréquents
+    """
 
-La fonction interne parcourt automatiquement toutes les pages
-de résultats jusqu'à ce que les `numFound` publications aient
-été traitées.
+    result = await search_lab_publications(
+        structure_id=structure_id,
+        year=year
+    )
 
-Le nombre de publications effectivement analysées est renvoyé
-dans `num_found`.
-
-Si l'utilisateur fournit un nom de structure et non un
-identifiant HAL, il faut d'abord appeler `search_structure`
-pour obtenir le `structure_id`.
-"""
-
-    result = await search_lab_publications(structure_id, year)
 
     if "error" in result:
         return result
 
-    return {
-        "raw_text_report": result["raw_text_report"],
-        "num_found": result["num_found"],
-    }
+
+    return result
