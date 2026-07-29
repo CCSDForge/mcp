@@ -4,61 +4,50 @@ from collections import Counter
 BASE_URL = "https://api.archives-ouvertes.fr/search/"
 
 
-async def search_lab_publications(structure_id: str, year: int | None = None, rows: int = 1000) -> dict:
+async def search_lab_publications(structure_id: str, year: int, rows: int = 1000) -> dict:
     """
-    Reproduit exactement la logique du script de référence : pagine sur
-    toutes les publications d'une structure (et, si fourni, une année
-    précise), compte les mots-clés (normalisés en minuscules), et journalise
-    la progression de récupération.
-
-    Args:
-        structure_id: identifiant HAL numérique de la structure (structId_i).
-        year: année exacte à filtrer (producedDateY_i:{year}), ou None pour
-            toutes les années.
-        rows: taille de page pour la pagination (défaut: 1000, comme le script).
+    Récupère et compte les mots-clés des publications HAL d'une structure,
+    pour une année donnée. Pagine sur tous les résultats.
 
     Returns:
         dict avec:
-            - num_found (int): nombre total de publications trouvées
-            - total_returned (int): nombre de publications effectivement parcourues
-            - counter (dict[str, int]): mot-clé (minuscule) -> nombre de publications
-            - pagination_log (list[str]): lignes "X/Y publications récupérées"
-            - query_url (str)
-        ou {"error": ..., "query_url": ...} en cas d'échec.
+            - structure (str)
+            - year (int)
+            - num_found (int)
+            - keywords (dict[str, int]): mot-clé -> nombre d'occurrences,
+              trié par fréquence décroissante
+            - pagination_log (list[str]): messages de progression
     """
-    fq = [f"structId_i:{structure_id}"]
-    if year is not None:
-        fq.append(f"producedDateY_i:{year}")
-
     counter = Counter()
-    pagination_log = []
     start = 0
     total = None
-    query_url = None
+    pagination_log = []
 
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
         while True:
             params = {
                 "q": "*:*",
-                "fq": fq,
+                "fq": [
+                    f"structId_i:{structure_id}",
+                    f"producedDateY_i:{year}",
+                ],
                 "fl": "keyword_s",
-                "wt": "json",
                 "rows": rows,
                 "start": start,
+                "wt": "json",
+                "sort": "docid asc",
             }
             async with session.get(BASE_URL, params=params) as resp:
-                query_url = str(resp.url)
                 if resp.status != 200:
                     text = await resp.text()
-                    return {
-                        "error": f"Erreur {resp.status}\n{text}",
-                        "query_url": query_url,
-                    }
+                    return {"error": f"Erreur {resp.status}: {text}"}
                 data = await resp.json()
 
             response = data["response"]
             if total is None:
                 total = response["numFound"]
+                pagination_log.append(f"Publications trouvées : {total}")
+
             docs = response["docs"]
             if not docs:
                 break
@@ -73,14 +62,14 @@ async def search_lab_publications(structure_id: str, year: int | None = None, ro
                         counter[kw] += 1
 
             start += len(docs)
-            pagination_log.append(f"{start}/{total} publications récupérées")
+            pagination_log.append(f"{start}/{total} publications traitées")
             if start >= total:
                 break
 
     return {
+        "structure": structure_id,
+        "year": year,
         "num_found": total or 0,
-        "total_returned": start,
-        "counter": dict(counter),
+        "keywords": dict(counter.most_common()),
         "pagination_log": pagination_log,
-        "query_url": query_url,
     }
