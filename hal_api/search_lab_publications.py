@@ -6,8 +6,8 @@ BASE_URL = "https://api.archives-ouvertes.fr/search/"
 
 async def search_lab_publications(structure_id: str, year: int, rows: int = 1000) -> dict:
     """
-    Récupère et compte les mots-clés des publications HAL d'une structure,
-    pour une année donnée. Pagine sur tous les résultats.
+    Récupère et compte les mots-clés (keyword_s) des publications HAL d'une
+    structure, pour une année donnée. Pagine sur tous les résultats.
 
     Returns:
         dict avec:
@@ -23,14 +23,15 @@ async def search_lab_publications(structure_id: str, year: int, rows: int = 1000
     total = None
     pagination_log = []
 
+    fq = [f"structId_i:{structure_id}"]
+    if year is not None:
+        fq.append(f"producedDateY_i:{year}")
+
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
         while True:
             params = {
                 "q": "*:*",
-                "fq": [
-                    f"structId_i:{structure_id}",
-                    f"producedDateY_i:{year}",
-                ],
+                "fq": fq,
                 "fl": "keyword_s",
                 "rows": rows,
                 "start": start,
