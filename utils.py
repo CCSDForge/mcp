@@ -40,11 +40,12 @@ def aggregate_publications_by_year_and_doctype(publications):
     return {year: dict(types) for year, types in stats.items()}
 
 
-def format_keyword_report(pagination_log: list[str], keywords: dict, top_n: int = 30) -> str:
+def format_keyword_report(pagination_log, keywords, top_n=30):
     lines = list(pagination_log)
     lines.append("")
     lines.append(f"Top {top_n} mots-clés :")
-    top_items = list(keywords.items())[:top_n]
-    for kw, count in top_items:
+
+    for kw, count in list(keywords.items())[:top_n]:
         lines.append(f"{kw} : {count}")
+
     return "\n".join(lines)
