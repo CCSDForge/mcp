@@ -8,51 +8,68 @@ async def search_structures(
     rows: int = 50,
 ):
     """
-    Search HAL structures (laboratories, universities, research organizations...)
-    by name or acronym.
+    search_structure - Recherche des structures de recherche référencées dans HAL
+    (laboratoires, universités, institutions, organismes de recherche, etc.) à
+    partir de leur nom ou de leur acronyme.
 
-    Use this tool when the user wants to identify a structure, find its HAL id,
-    or explore its parent structure (e.g. a lab attached to a university).
-    Handles approximate/partial names (e.g. "Lyon 1" matches "Université Claude
-    Bernard Lyon 1").
+    UTILISER CET OUTIL lorsque l'utilisateur souhaite :
+      - identifier une structure de recherche dans HAL ;
+      - récupérer son identifiant HAL (`struct_id`) ;
+      - retrouver la structure parente d'un laboratoire ou d'une équipe de recherche ;
+      - rechercher une structure à partir d'un nom complet, d'un acronyme ou d'un
+        nom partiel (ex. : "Lyon 1", "CNRS", "LIP6").
 
-    Structures are grouped by validation status ("statut_validation" field):
-      - "VALID": officially validated structure, safe to use as a reference ID
-      - "INCOMING": submitted but not yet validated, may change or be merged/renamed
-      - other values: rare/legacy statuses, treat with caution
+    L'outil gère les recherches approximatives ou partielles. Par exemple,
+    « Lyon 1 » permet de retrouver « Université Claude Bernard Lyon 1 ».
 
-    IMPORTANT — anti-hallucination rule:
-      - Only report structure IDs, names, or statuses that are explicitly present
-        in the returned lists below (structures_valides, structures_incoming,
-        structures_autres_statuts).
-      - Never guess, infer, or recall a structure ID from prior/general knowledge,
-        even if it seems "standard" or well-known.
-      - Clearly tell the user whether an ID comes from a VALID or an INCOMING
-        structure — do not present an INCOMING id as if it were validated.
-      - If num_found is 0 or no structure matches what the user asked for, say so
-        explicitly instead of providing an unverified ID.
-      - If "has_more" is true, this means num_found > total_returned: more matching
-        structures exist in HAL than were retrieved. Do NOT conclude that a
-        structure "does not exist" or "is not validated" based on a partial list.
-        Re-call this tool with a higher "rows" value (see the "warning" field)
-        before drawing any conclusion.
+    Les structures sont classées selon leur statut de validation (`statut_validation`) :
+
+      - `VALID` :
+        Structure officiellement validée dans HAL. Son identifiant peut être utilisé
+        comme référence dans les autres outils.
+
+      - `INCOMING` :
+        Structure enregistrée mais non encore validée. Son identifiant peut évoluer
+        ou être fusionné avec une autre structure.
+
+      - Autres statuts :
+        Cas plus rares ou hérités ; ils doivent être interprétés avec prudence.
+
+    IMPORTANT - Règles anti-hallucination :
+      - Ne rapporter que les identifiants, noms et statuts de validation
+        explicitement présents dans :
+          * `structures_valides`
+          * `structures_incoming`
+          * `structures_autres_statuts`
+
+      - Ne jamais inventer ou déduire un identifiant HAL à partir de connaissances
+        générales, même si la structure est connue.
+      - Toujours préciser si un identifiant provient d'une structure `VALID`
+        ou `INCOMING`. Ne jamais présenter une structure `INCOMING` comme étant
+        officiellement validée.
+      - Si `num_found` est égal à 0, indiquer explicitement qu'aucune structure
+        correspondante n'a été trouvée.
+      - Si `has_more` est égal à `True`, cela signifie que tous les résultats
+        n'ont pas été récupérés (`num_found > total_returned`).
+        Ne pas conclure qu'une structure est absente ou non validée sur la base
+        d'une liste incomplète. Relancer l'outil avec une valeur de `rows`
+        plus élevée (voir le champ `warning`) avant de tirer une conclusion.
 
     Parameters:
-        nom_structure: name or acronym to search for (e.g. "Lyon 1", "CNRS", "LIP6")
-        rows: maximum number of matching structures to return (default: 50)
+        nom_structure: Nom, acronyme ou fragment du nom de la structure à rechercher (ex. : "Lyon 1", "CNRS", "LIP6").
+        rows: Nombre maximal de structures à retourner (par défaut : 50).
 
     Returns:
-        num_found: total number of matching structures in HAL
-        total_returned: number of structures actually returned
-        has_more: true if num_found > total_returned (results were truncated)
-        structures: full list of matching structures (all statuses combined)
-        structures_valides: subset with statut_validation == "VALID"
-        structures_incoming: subset with statut_validation == "INCOMING"
-        structures_autres_statuts: subset with any other status value
-        query_url: exact URL called (for traceability)
-        warning: present only if has_more is true, tells the model to retry with
-            a higher rows value
+        num_found: Nombre total de structures correspondant à la recherche dans HAL.
+        total_returned: Nombre de structures effectivement retournées.
+        has_more: Vaut `True` si tous les résultats n'ont pas été récupérés (`num_found > total_returned`).
+        structures: Liste complète des structures retournées, tous statuts confondus.
+        structures_valides: Sous-ensemble des structures dont le statut est `VALID`.
+        structures_incoming: Sous-ensemble des structures dont le statut est `INCOMING`.
+        structures_autres_statuts: Sous-ensemble des structures ayant un autre statut de validation.
+        query_url: URL exacte de la requête envoyée à l'API HAL.
     """
+
     if not nom_structure or not nom_structure.strip():
         return {"error": "Le paramètre 'nom_structure' est requis et ne peut pas être vide"}
 
