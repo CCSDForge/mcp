@@ -9,24 +9,37 @@ async def get_publication_statistics_by_structure(
     end_year: int,
 ):
     """
-    Get the number of HAL publications for a given structure and period,
-    broken down by year and document type.
+    Outil get_publication_statistics_by_structure - Récupère le nombre de publications HAL pour une structure et une
+    période données, réparties par année et par type de document.
+
+    Utiliser cet outil lorsque l'utilisateur souhaite connaître la production scientifique d'une structure (laboratoire,
+    université, institution, etc.), notamment le nombre de publications par année et leur répartition par type de document.
+
+    IMPORTANT :
+    Cet outil nécessite l'identifiant HAL (`struct_id`) de la structure.
+    Si l'utilisateur ne connaît que le nom ou l'acronyme de la structure,
+    utiliser d'abord l'outil `search_structures` afin de récupérer son
+    identifiant HAL, puis appeler cet outil avec le `struct_id` obtenu.
+
 
     Parameters:
-        struct_id: HAL structure id (e.g. 194495 for Université Claude Bernard Lyon 1)
-        start_year: first year of the period (inclusive)
-        end_year: last year of the period (inclusive), must be >= start_year
+        struct_id: id de structure HAL (ex : 194495 pour l'Université Claude
+            Bernard Lyon 1)
+        start_year: première année de la période (incluse)
+        end_year: dernière année de la période (incluse), doit être >= start_year
 
     Returns:
-        structure_id: the requested structure id
-        period: "start_year-end_year"
-        num_found: total number of publications matching the filters in HAL
-        total_returned: number of publications actually used to compute stats
-        has_more: True if num_found > total_returned — stats below are based on
-            a partial sample, not the full set. If True, do not present the
-            numbers as exhaustive; mention that they are based on a subset.
-        stats: dict of {year: {doc_type: count}}
-        query_url: exact URL called (for traceability)
+        - structure_id: Identifiant HAL de la structure analysée.
+        - period: Période analysée au format "start_year-end_year".
+        - num_found: Nombre total de publications correspondant aux critères dans HAL.
+        - total_returned: Nombre de publications effectivement utilisées pour calculer les statistiques.
+        - has_more: Indique si toutes les publications n'ont pas été récupérées
+            (`num_found > total_returned`). Si cette valeur est `True`, les statistiques
+            sont calculées sur un sous-ensemble des publications et ne doivent pas être
+            présentées comme exhaustives.
+        - stats: Répartition des publications par année et par type de document, sous la forme :
+            `{année: {type_document: nombre_de_publications}}`.
+        - query_url: URL de la requête envoyée à l'API HAL, fournie à des fins de traçabilité.
     """
     if start_year > end_year:
         return {"error": f"start_year ({start_year}) doit être <= end_year ({end_year})"}
