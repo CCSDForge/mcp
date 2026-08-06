@@ -34,6 +34,44 @@ Ces outils permettent d’analyser les structures de recherche référencées da
 - `search_lab_keyword_statistics` : identification des thématiques émergentes via les mots-clés des publications.
 
 ---
+# Promptothèque
+
+Pour obtenir des réponses fiables, il est recommandé de formuler les questions en lien avec les fonctionnalités couvertes par les outils disponibles. 
+Vous trouverez ci-dessous une série d'exemples de requêtes pouvant être utilisées directement ou adaptées selon vos besoins.
+
+## Recherche d'auteurs
+
+- Recherche l'auteur **Yutong Fei** dans HAL.
+- Donne-moi l'identifiant HAL de **Yutong Fei**.
+- Quelles sont les publications récentes de **Yutong Fei** ?
+- Donne les publications de **Yutong Fei** entre 2022 et 2024.
+- À quel laboratoire est affilié **Yutong Fei** ?
+- Dans quelles structures de recherche **Yutong Fei** a-t-il travaillé ?
+
+## Recherche de structures
+
+- Quel est l'identifiant HAL de **l'Université Claude Bernard Lyon 1** ?
+- Recherche l'identifiant HAL de **CCSD**.
+- Recherche la structure **CREATIS**.
+
+## Statistiques de publications
+
+- Donne les statistiques de publication (nombre de publications, répartition par type de document) de **l'Université Claude Bernard Lyon 1** entre 2018 et 2023.
+- Combien de publications a produites **CREATIS** entre 2020 et 2024 ?
+- Quelle est l'évolution du nombre de publications de **LIRIS** entre 2019 et 2024 ?
+
+## Publications financées par l'ANR
+
+- Combien de publications financées par des projets ANR en accès ouvert possède **l'Université Claude Bernard Lyon 1** en 2025 ?
+- Combien de publications financées par l'ANR possède **CREATIS** entre 2020 et 2024 ?
+- Quelle est la part des publications ANR en accès ouvert de **LIRIS** ?
+
+## Analyse des thématiques de recherche
+
+- Quels sont les principaux domaines de recherche de **l'Université Claude Bernard Lyon 1** en 2021 ?
+- Quels sont les mots-clés les plus fréquents des publications de **CREATIS** en 2023 ?
+- Quelles sont les thématiques émergentes de **LIRIS** en 2024 ?
+---
 
 # Description détaillée des outils
 
