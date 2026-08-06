@@ -108,7 +108,7 @@ async def count_anr_publications_logic(
 ) -> dict:
     """
     Calcule le nombre de publications HAL financées par l'ANR correspondant
-    aux filtres donnés. Ne récupère aucun document (rows=0), uniquement le compte.
+    aux filtres donnés. uniquement le compte.
     """
     if start_date is not None and end_date is not None and start_date > end_date:
         raise ValueError(f"start_date ({start_date}) must be <= end_date ({end_date})")

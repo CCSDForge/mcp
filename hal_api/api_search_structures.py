@@ -1,9 +1,3 @@
-"""
-Appel API deHAL : /ref/structure
-Recherche une structure HAL (laboratoire, université, organisme...) par nom
-ou sigle (hal_api_search_structure), ou résout un docid connu vers son nom
-lisible (hal_api_get_structure_by_id).
-"""
 import httpx
 
 DEHAL_STRUCTURE_URL = "https://api.archives-ouvertes.fr/ref/structure/"
@@ -30,7 +24,7 @@ async def hal_api_search_structure(
     Interroge l'API deHAL /ref/structure pour rechercher une structure par nom ou sigle.
 
     Args:
-        nom_structure: nom ou sigle recherché (ex: "Lyon 1", "CNRS", "LIP6")
+        nom_structure: nom ou sigle recherché (ex: "Lyon 1", "CNRS", "IP Paris")
         rows: nombre maximum de résultats retournés par HAL
 
     Returns:
@@ -39,9 +33,6 @@ async def hal_api_search_structure(
             - structures (list[dict]): structures retournées, détaillées
             - structures_valides / structures_incoming / structures_autres_statuts
             - query_url (str): url exacte appelée (utile pour debug/traçabilité)
-        ou en cas d'erreur:
-            - error (str)
-            - query_url (str)
     """
     params = {
         "q": f'text:"{nom_structure}"',
@@ -100,7 +91,6 @@ async def hal_api_get_structure_by_id(structure_id) -> dict:
               nom_parent, statut_validation} si trouvé
             - num_found (int)
             - query_url (str)
-        ou en cas d'erreur: {"error": str, "query_url": str}
     """
     params = {
         "q": f"docid:{structure_id}",

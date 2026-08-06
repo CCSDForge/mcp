@@ -13,7 +13,7 @@ async def search_lab_keywords(
     Recherche les mots-clés agrégés d'une structure HAL.
 
     Solr effectue directement le comptage via les facettes.
-    Aucun document individuel n'est récupéré.
+    on cherche pas la liste de publications ...
     """
 
     params = {

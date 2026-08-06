@@ -1,30 +1,3 @@
-"""
-Couche d'accès à l'API HAL pour les affiliations auteur-structure.
-
-IMPORTANT : il n'existe PAS d'endpoint dédié "/search/authorstructure/" dans
-l'API HAL (confirmé empiriquement : cet endpoint renvoie une page HTML, pas
-du JSON, statut 200 mais Content-Type text/html). Les données d'affiliation
-sont en réalité portées par les notices de PUBLICATIONS elles-mêmes, dans la
-collection /search/ standard, via des champs multivalués de la forme :
-
-    "{struct_id}_FacetSep_{struct_name}_JoinSep_{hal_id}_FacetSep_{auth_full_name}"
-
-Deux champs pertinents (confirmés via une requête réelle avec fl=*) :
-  - structPrimaryHasAuthIdHal_fs : structures déclarées comme AFFILIATION
-    PRINCIPALE de l'auteur sur cette publication précise.
-  - structHasAuthIdHal_fs : TOUTES les structures liées à l'auteur sur cette
-    publication (principales + secondaires + hiérarchie institutionnelle
-    parente du labo) -- un ensemble plus large et beaucoup plus bruité.
-
-HAL n'a pas de notion unique de "affiliation actuelle" exposée telle quelle.
-Ce module calcule une fréquence d'apparition des structures PRIMAIRES à
-travers l'ensemble des publications de l'auteur : les structures qui
-reviennent le plus souvent sont une bonne approximation de ses affiliations
-principales/actuelles -- mais il s'agit d'un indicateur DÉRIVÉ et calculé,
-pas d'une valeur affichée telle quelle par HAL. Le tool appelant doit
-présenter ce calcul comme tel (fréquence sur publications) et non comme un
-fait certifié par HAL.
-"""
 import json
 import aiohttp
 from collections import Counter
