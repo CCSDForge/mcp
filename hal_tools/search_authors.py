@@ -5,33 +5,63 @@ from hal_api.api_search_authors import search_authors
 @mcp.tool()
 async def search_authors(query: str, rows: int = 10):
     """
-    Search authors in the HAL referential (/ref/author) by name or name fragment.
+    search_authors - Recherche des auteurs dans le référentiel d'auteurs HAL à partir
+    de leur nom, prénom ou d'une partie de leur nom.
 
-    USE THIS TOOL to resolve an author name to their HAL id(s). This tool returns identity information only
-    (name, HAL id, validation status).
+    UTILISER CET OUTIL lorsque l'utilisateur souhaite identifier un auteur dans HAL
+    et récupérer son identifiant HAL (`hal_id`). Cet outil retourne uniquement les
+    informations d'identification de l'auteur (nom, identifiant HAL, statut de
+    validation).
 
-    DO NOT use this tool to find an author's affiliations, lab, or career
-    history — use get_author_affiliations for that instead.
-    DO NOT use this tool to find an author's publications — use a
-    publication-search tool for that instead.
+    NE PAS utiliser cet outil pour rechercher les affiliations, le laboratoire,
+    l'université ou le parcours d'un auteur : utiliser `get_author_affiliations`.
 
-    Args:
-        query: author name or fragment to search for (e.g. "Yutong Fei")
-        rows: maximum number of results (default: 10)
+    NE PAS utiliser cet outil pour rechercher les publications d'un auteur :
+    utiliser `search_author_publications`.
+
+    Parameters:
+        query:
+            Prénom, nom ou fragment du nom de l'auteur à rechercher
+            (ex. : "Yutong Fei").
+
+        rows:
+            Nombre maximal d'auteurs à retourner (par défaut : 10).
 
     Returns:
-        num_found: total number of matching authors in HAL
-        total_returned: number of authors actually returned
-        has_more: True if num_found > total_returned (results truncated)
-        authors: list of {name, hal_id, docid, statut_validation}
-                 (these are the ONLY field names that exist — do not invent
-                 others such as "id_hal" or "nom_complet")
-        query_url: exact URL called (for traceability)
+        num_found:
+            Nombre total d'auteurs correspondant à la recherche dans HAL.
 
-    ANTI-HALLUCINATION RULE: only report name/hal_id/status values explicitly
-    present in "authors" below. If num_found is 0, say so explicitly — do not
-    guess an author's identity or details, and do not silently pick one
-    homonym if several are returned.
+        total_returned:
+            Nombre d'auteurs effectivement retournés.
+
+        has_more:
+            Vaut `True` si `num_found > total_returned`, indiquant que tous les
+            résultats n'ont pas été récupérés.
+
+        authors:
+            Liste des auteurs trouvés, chaque élément contenant :
+            - `name` : nom de l'auteur ;
+            - `hal_id` : identifiant HAL ;
+            - `docid` : identifiant interne du document ;
+            - `statut_validation` : statut de validation dans HAL.
+
+            Ces noms de champs correspondent exactement à ceux retournés par l'API
+            HAL et ne doivent pas être remplacés par d'autres appellations.
+
+        query_url:
+            URL exacte de la requête envoyée à l'API HAL, fournie à des fins de
+            traçabilité.
+
+    IMPORTANT - Règles anti-hallucination :
+        - Ne rapporter que les informations explicitement présentes dans la liste
+          `authors`.
+        - Si `num_found` est égal à 0, indiquer explicitement qu'aucun auteur n'a
+          été trouvé.
+        - Si plusieurs auteurs correspondent à la recherche (homonymes), ne jamais
+          en sélectionner un arbitrairement. Présenter tous les résultats ou
+          demander à l'utilisateur de préciser l'auteur recherché.
+        - Ne jamais inventer un identifiant HAL, un nom ou un statut de validation
+          à partir de connaissances externes.
     """
     if not query or not query.strip():
         return {"error": "Le paramètre 'query' est requis et ne peut pas être vide"}
