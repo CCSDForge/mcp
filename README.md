@@ -9,7 +9,13 @@ Ces outils s’appuient sur les [différentes endpoints de l'API HAL](https://ap
 Le serveur consulte également d'autres référentiels HAL :`author` : référentiel des auteurs ; `structure` : référentiel des structures de recherche et `anrproject` : référentiel des projets ANR. 
 
 ---
+# Connecter votre agent au serveur HAL MCP
 
+Le serveur **HAL MCP** est actuellement disponible sur l’environnement de préproduction pour la phase de test :
+
+🔗 https://api-preprod.archives-ouvertes.fr/mcp
+
+---
 # Outils disponibles
 
 Nous avons développé une première série de 7 outils permettant d’interroger les métadonnées HAL selon deux niveaux d’analyse :
