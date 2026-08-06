@@ -21,12 +21,10 @@ async def get_publication_statistics_by_structure(
     utiliser d'abord l'outil `search_structures` afin de récupérer son
     identifiant HAL, puis appeler cet outil avec le `struct_id` obtenu.
 
-
     Parameters:
-        struct_id: id de structure HAL (ex : 194495 pour l'Université Claude
-            Bernard Lyon 1)
-        start_year: première année de la période (incluse)
-        end_year: dernière année de la période (incluse), doit être >= start_year
+        - struct_id: Identifiant HAL de la structure de recherche.
+        - start_year: Année de début de la période d'analyse (incluse).
+        - end_year: Année de fin de la période d'analyse (incluse). Doit être supérieure ou égale à `start_year`.
 
     Returns:
         - structure_id: Identifiant HAL de la structure analysée.
