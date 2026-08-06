@@ -64,7 +64,6 @@ Vous trouverez ci-dessous une série d'exemples de requêtes pouvant être utili
 
 - Combien de publications financées par des projets ANR en accès ouvert possède **l'Université Claude Bernard Lyon 1** en 2025 ?
 - Combien de publications financées par l'ANR possède **CREATIS** entre 2020 et 2024 ?
-- Quelle est la part des publications ANR en accès ouvert de **LIRIS** ?
 
 ## Analyse des thématiques de recherche
 
