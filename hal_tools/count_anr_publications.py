@@ -17,7 +17,7 @@ async def count_anr_publications(
     - "Quel est le nombre de publications financées par l'ANR pour une structure donnée ?"
     - "Quelle est la part des publications financées par l'ANR disponibles en accès ouvert pour une structure donnée ?"
 
-    Paramètrage:
+    paramétrage:
         open_access:
             Filtre selon le statut d'accès ouvert des publications.
             True : uniquement les publications en accès ouvert.
@@ -36,7 +36,7 @@ async def count_anr_publications(
             Date de fin incluse de la période d'analyse, au format YYYY-MM-DD.
             None : aucune borne supérieure.
 
-    Returns:
+    Retours:
         Retourne les statistiques agrégées concernant :
         - le nombre total de publications financées par l'ANR ;
         - la répartition selon le statut d'accès ouvert lorsque le filtre est utilisé ;

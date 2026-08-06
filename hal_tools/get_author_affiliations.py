@@ -9,104 +9,52 @@ async def get_author_affiliations(
     rows: int = 100,
 ):
     """
-    Find an author's affiliation history in HAL: which structures (labs,
-    universities...) they have been linked to, to help trace career evolution.
+    get_author_affiliations - Recherche l'historique des affiliations d'un auteur dans HAL :
+    les structures (laboratoires, universités, institutions...) auxquelles il a été
+    rattaché, afin d'aider à retracer son évolution de carrière scientifique.
 
-    USE THIS TOOL when the user asks about (in English OR French):
-      - "affiliation(s)", "affiliation history", "which lab/university"
-      - "affiliation", "affiliations", "structure(s) de rattachement"
-      - "évolution de carrière", "carrière", "parcours" of a researcher
-      - "quel laboratoire", "quelle université", "où travaille" un auteur
-      - a question relating an author to a structure/lab/university over time
+    UTILISER CET OUTIL lorsque l'utilisateur demande :
+      - des informations sur les affiliations d'un auteur
+      - l'historique des affiliations d'un auteur
+      - le laboratoire, l'université ou la structure de rattachement d'un chercheur
+      - l'évolution de carrière, le parcours scientifique d'un chercheur
+      - "quel laboratoire ?", "quelle université ?", "où travaille ?" un auteur
 
-    DO NOT use this tool to search for an author's PUBLICATIONS (their papers,
-    articles, thesis). Use a publication-search tool for that instead — this
-    tool only returns structure/affiliation relations, not publication lists.
+    Attention : NE PAS utiliser cet outil pour rechercher les PUBLICATIONS d'un auteur
+    (articles, thèses, communications, etc.). Utiliser un outil de recherche de
+    publications dédié comme search_author_publication.
+    L'outil get_author_affiliations retourne uniquement les relations auteur-structure/affiliation et non la liste des publications.
 
-    Two-step process:
-      1. Resolve the author name to one or more HAL author ids (hal_id).
-         If multiple homonyms are found, ALL of them are returned separately —
-         do not silently pick one and present it as "the" author.
-      2. For each resolved hal_id, fetch the raw author-structure relations.
+    Fonctionnement : identifie l'auteur (hal_id) par outil search_authors puis extrait, depuis ses notices de publication HAL, deux champs :
+        - structPrimaryHasAuthIdHal_fs : affiliation principale déclarée par publication
+        - structHasAuthIdHal_fs : toutes les structures associées (principales + secondaires + hiérarchie institutionnelle) — plus large, plus bruité
+        Les occurrences de structPrimaryHasAuthIdHal_fs sont agrégées dans primary_structures_by_frequency.
 
-    IMPORTANT — how this data is actually obtained:
-      There is NO dedicated "/search/authorstructure/" endpoint in the HAL
-      API (verified empirically: it returns an HTML page, not JSON). HAL does
-      not expose a single "current affiliation" field either. Instead, this
-      tool queries the author's PUBLICATIONS (the standard /search/
-      collection) and extracts two fields present on each publication doc:
-        - structPrimaryHasAuthIdHal_fs: structure(s) declared as this
-          author's PRIMARY affiliation on that specific publication.
-        - structHasAuthIdHal_fs: ALL structures linked to this author on that
-          publication, including the parent institutional hierarchy of their
-          lab (e.g. a lab's supervising universities) — a broader, noisier set.
-      This tool aggregates structPrimaryHasAuthIdHal_fs across ALL of the
-      author's publications and counts how often each structure appears,
-      producing "primary_structures_by_frequency". Structures appearing most
-      often are a good approximation of the author's main/current
-      affiliation(s), but this is a DERIVED, COMPUTED signal — not a fact
-      literally stated by HAL as "current affiliation".
+    RÈGLES ANTI-HALLUCINATION (strictes) :
+         - Ne rapporter que ce qui est présent dans primary_structures_by_frequency, all_linked_structures_by_frequency ou raw_docs. Jamais d'invention de nom, id ou période à partir de connaissances générales.
+         - Pour une affiliation "principale"/"actuelle" : utiliser primary_structures_by_frequency (all_linked... est trop large/parent).
+         - Ne jamais déduire une affiliation depuis un titre ou un résumé de publication.
+         - Pas de notion d'"affiliation implicite" : une affiliation est présente dans les données ou inconnue.
+         - Toujours formuler comme "structure apparaissant comme affiliation principale déclarée dans X publications", jamais comme un fait certifié d'"affiliation actuelle".
+         - Homonymes (plusieurs auteurs dans authors_found) : présenter séparément ou demander confirmation, ne jamais fusionner.
+         - num_found = 0, pas d'affiliation, pas de hal_id, has_more=true, ou clé "error" dans affiliations_by_author : signaler tel quel, sans reconstruire ni estimer.
 
-    IMPORTANT — anti-hallucination rules:
-      - Only report structures that are explicitly present in
-        "primary_structures_by_frequency", "all_linked_structures_by_frequency",
-        or "raw_docs" for the resolved author(s). Never invent a structure
-        name, id, or date from prior knowledge, even if it seems standard.
-      - When asked for an author's "main"/"current" affiliation, prefer
-        "primary_structures_by_frequency" (the structures that appear most
-        often as PRIMARY across publications) over
-        "all_linked_structures_by_frequency" (broader, includes institutional
-        hierarchy noise — e.g. a lab's supervising universities that are not
-        necessarily the author's own declared affiliation).
-      - Present this as "based on how often this structure appears as a
-        declared primary affiliation across N publications", not as a
-        certified fact from HAL — HAL itself does not label anything as
-        "the" current affiliation.
-      - Do NOT infer an author's affiliation from a laboratory, university, or
-        institution name appearing in a PUBLICATION TITLE or its content (e.g.
-        a corpus name, a case study institution mentioned in the title). A
-        structure name in a title is NOT evidence of the author's own
-        affiliation. Only use structures found in this tool's dedicated
-        affiliation fields, never from publication title/abstract text.
-      - Do not label anything as an "implicit affiliation" or "mention
-        implicite" — affiliation is either present in the data above or
-        unknown; there is no in-between category to report.
-      - If "authors_found" contains more than one homonym, ask the user to
-        confirm which one they mean, or clearly present affiliations grouped
-        by person — never merge two different people's affiliations together.
-      - If num_found is 0 for the author search, or 0 for the affiliations,
-        say so explicitly instead of guessing.
-      - If an author has no usable hal_id, this is reported as an explicit
-        error entry for that author — it is NOT the same as "no affiliations
-        found", and must not be presented as such.
-      - If has_more is true (for either step), mention that results were
-        truncated and more may exist — do not present the list as exhaustive.
-      - If affiliations_by_author for a given hal_id contains an "error" key,
-        you MUST report that error to the user as-is (technical failure,
-        affiliations unavailable). You must NOT compensate by inferring or
-        guessing affiliations yourself from publication titles, abstracts,
-        author names, or general knowledge about the field. A tool failure
-        is not license to fall back on your own reasoning about what the
-        affiliation "probably" is — say the data could not be retrieved and
-        stop there.
-
-    Parameters:
-        nom_auteur: author name to search for (e.g. "Jean Dupont")
-        rows: max number of affiliation records to retrieve per author (default: 100)
+    Paramétrage :
+        - nom_auteur: nom de l'auteur à rechercher (ex: "Jean Dupont")
+        - rows: nombre max d'enregistrements d'affiliation par auteur (défaut: 100)
 
     Returns:
-        authors_found: list of resolved authors, each with the fields
-            {name, hal_id, docid, statut_validation}
-            (these are the ONLY field names produced by author search — do
-            not invent alternatives such as "id_hal" or "nom_complet")
-        homonyms_warning: present if more than one author matched the name
-        affiliations_by_author: dict mapping hal_id -> {
-            num_found, total_returned, has_more, raw_docs, raw_fields_sample,
-            primary_structures_by_frequency, all_linked_structures_by_frequency
-        }, OR mapping a placeholder key -> {"error": ...} for any author that
-        could not be processed (e.g. missing hal_id, or a failed API call).
-        query_url_author_search: URL used to resolve the author name
-    """
+        authors_found: [{name, hal_id, docid, statut_validation}, ...]
+        homonyms_warning: présent si plusieurs auteurs correspondent au nom
+        affiliations_by_author: {
+            hal_id: {
+                num_found, total_returned, has_more, raw_docs, raw_fields_sample,
+                primary_structures_by_frequency, all_linked_structures_by_frequency
+            }
+            # ou {"error": "..."} en cas d'échec pour cet auteur
+        }
+        query_url_author_search: URL utilisée pour identifier l'auteur dans HAL
+"""
     if not nom_auteur or not nom_auteur.strip():
         return {"error": "Le paramètre 'nom_auteur' est requis et ne peut pas être vide"}
 
