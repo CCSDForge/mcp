@@ -1,5 +1,5 @@
 from core.mcp import mcp
-from hal_api.api_search_authors import search_authors
+from hal_api.api_search_authors import search_authors as search_authors_api
 
 
 @mcp.tool()
@@ -66,7 +66,7 @@ async def search_authors(query: str, rows: int = 10):
     if not query or not query.strip():
         return {"error": "Le paramètre 'query' est requis et ne peut pas être vide"}
 
-    result = await search_authors(query.strip(), rows=rows)
+    result = await search_authors_api(query.strip(), rows=rows)
     if "error" in result:
         return {"error": result["error"], "query_url": result.get("query_url")}
     return result
