@@ -61,15 +61,13 @@ Retourne les structures classées selon leur fréquence d’apparition dans les 
 | Paramètre | Type | Description |
 |---|---|---|
 | `id_hal` | obligatoire | Identifiant HAL de l’auteur |
-| `rows` | optionnel (défaut : 100) | Nombre maximal de publications analysées |
 
 * `search_structures` : Recherche des structures de recherche référencées dans HAL (laboratoires, universités, institutions, etc.) à partir de leur nom ou de leur acronyme.
 Retourne les structures correspondantes avec : leur identifiant HAL. 
 
-| Paramètre | Type | Description |
-|---|---|---|
-| `nom_structure` | obligatoire | Nom ou acronyme de la structure |
-| `rows` | optionnel (défaut : 50) | Nombre maximal de structures retournées |
+| Paramètre | Type | Description                      |
+|---|---|----------------------------------|
+| `nom_structure` | obligatoire | Nom ou acronyme de la structure  |
 
 * `get_publication_statistics_by_structure` : Recherche les publications d’une structure de recherche enregistrée dans HAL sur une période donnée.
 Retourne des statistiques concernant : le nombre de publications ; leur type de document ;  leur année de production.
@@ -79,7 +77,6 @@ Retourne des statistiques concernant : le nombre de publications ; leur type de 
 | `struct_id` | obligatoire | Identifiant HAL de la structure |
 | `start_year` | obligatoire | Année de début |
 | `end_year` | obligatoire | Année de fin |
-| `rows` | optionnel (défaut : 10000) | Nombre maximal de publications retournées |
 
 * `get_anr_publications` : Recherche les publications financées par des projets ANR pour une structure de recherche sur une période donnée.
 Permet également d’analyser leur niveau d’accès ouvert (*open access*).
@@ -92,7 +89,6 @@ la part des publications disponibles en accès ouvert.
 | `start_year` | optionnel | Année de début |
 | `end_year` | optionnel | Année de fin |
 | `open_access` | optionnel | Filtre selon le statut d’accès ouvert |
-| `rows` | optionnel | Nombre maximal de publications retournées |
 
 * `search_lab_keyword_statistics` : Analyse les thématiques émergentes d’une structure de recherche enregistrée dans HAL à partir de la distribution des mots-clés associés aux publications.
 Retourne : le nombre total de publications pour une année donnée ; une agrégation des mots-clés classés selon leur fréquence d’apparition.
@@ -101,4 +97,4 @@ Retourne : le nombre total de publications pour une année donnée ; une agréga
 |---|---|---|
 | `structure_id` | obligatoire | Identifiant HAL de la structure |
 | `year` | obligatoire | Année analysée |
-| `limit` | optionnel (défaut : 30) | Nombre maximal de mots-clés retournés |
+
