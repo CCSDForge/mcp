@@ -22,17 +22,42 @@ async def search_author_publications(
     rows: int = 50,
 ):
     """
-    Search publications by author name in HAL.
+        search_author_publications - Recherche les publications d'un auteur dans HAL.
 
-    Returns:
-        title, abstract, year, document type, DOI.
+        Utiliser cet outil lorsque l'utilisateur souhaite consulter les publications
+        d'un auteur, obtenir leurs métadonnées.
 
-    Parameters:
-        author_name: Full author name (e.g. 'Yutong FEI')
-        start_date: filter start date (YYYY-MM-DD)
-        end_date: filter end date (YYYY-MM-DD)
-        rows: maximum number of results (default: 50)
-    """
+        Parameters:
+            author_name: Nom complet de l'auteur (ex. : "Yutong FEI").
+            start_date:
+                Date de début de la période de recherche (incluse),
+                au format YYYY-MM-DD.
+                Si None, aucune borne inférieure n'est appliquée.
+            end_date:
+                Date de fin de la période de recherche (incluse),
+                au format YYYY-MM-DD.
+                Si None, aucune borne supérieure n'est appliquée.
+            rows:
+                Nombre maximal de publications à retourner
+                (par défaut : 50).
+
+        Returns:
+            total:
+                Nombre total de publications retournées.
+            with_abstract:
+                Nombre de publications disposant d'un résumé.
+            without_abstract:
+                Nombre de publications sans résumé.
+            publications:
+                Liste des publications avec leurs principales métadonnées,
+                notamment :
+                - titre ;
+                - résumé ;
+                - date de publication ;
+                - année ;
+                - type de document ;
+                - DOI (lorsqu'il est disponible).
+        """
 
     validate_date(start_date, "start_date")
     validate_date(end_date, "end_date")
