@@ -7,10 +7,8 @@ async def search_authors(query: str, rows: int = 10):
     """
     Search authors in the HAL referential (/ref/author) by name or name fragment.
 
-    USE THIS TOOL to resolve an author name to their HAL id(s), including
-    disambiguating homonyms. This tool returns identity information only
-    (name, HAL id, validation status) — it does NOT return affiliations or
-    publications.
+    USE THIS TOOL to resolve an author name to their HAL id(s). This tool returns identity information only
+    (name, HAL id, validation status).
 
     DO NOT use this tool to find an author's affiliations, lab, or career
     history — use get_author_affiliations for that instead.
