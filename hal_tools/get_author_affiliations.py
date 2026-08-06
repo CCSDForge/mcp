@@ -1,6 +1,6 @@
 from core.mcp import mcp
 from hal_api.api_search_authors import search_authors as _search_author
-from hal_api import api_get_author_affiliations as _get_author_affiliations
+from hal_api.api_get_author_affiliations import api_get_author_affiliations
 
 
 @mcp.tool()
@@ -111,7 +111,7 @@ async def get_author_affiliations(
             continue
 
         try:
-            affil_result = await _get_author_affiliations(id_hal=hal_id, rows=rows)
+            affil_result = await api_get_author_affiliations(id_hal=hal_id, rows=rows)
         except Exception as e:
             affiliations_by_author[hal_id] = {"error": f"Erreur inattendue : {e}"}
             continue

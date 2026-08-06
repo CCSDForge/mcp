@@ -33,7 +33,7 @@ def _parse_struct_auth_entry(entry: str):
     }
 
 
-async def hal_api_get_author_affiliations(id_hal: str, rows: int = 100) -> dict:
+async def api_get_author_affiliations(id_hal: str, rows: int = 100) -> dict:
     """
     Récupère les affiliations d'un auteur HAL en interrogeant ses publications
     (collection /search/) et en extrayant + agrégeant les champs de structure
