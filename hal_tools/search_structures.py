@@ -1,9 +1,9 @@
 from core.mcp import mcp
-from hal_api.hal_api_search_structure import hal_api_search_structure as _search_structure
+from hal_api.api_search_structures import hal_api_search_structure as _search_structure
 
 
 @mcp.tool()
-async def search_structure(
+async def search_structures(
     nom_structure: str,
     rows: int = 50,
 ):

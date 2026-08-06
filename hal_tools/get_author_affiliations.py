@@ -1,6 +1,6 @@
 from core.mcp import mcp
-from hal_api.search_authors import search_authors as _search_author
-from hal_api import hal_api_get_author_affiliations as _get_author_affiliations
+from hal_api.api_search_authors import search_authors as _search_author
+from hal_api import api_get_author_affiliations as _get_author_affiliations
 
 
 @mcp.tool()

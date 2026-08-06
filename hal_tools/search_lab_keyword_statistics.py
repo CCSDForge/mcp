@@ -1,9 +1,9 @@
 from core.mcp import mcp
-from hal_api.search_lab_keywords import search_lab_keywords
+from hal_api.api_search_lab_keyword_statistics import search_lab_keywords
 
 
 @mcp.tool()
-async def hal_get_lab_keyword_statistics(
+async def search_lab_keyword_statistics(
     structure_id: str,
     year: int
 ) -> dict:

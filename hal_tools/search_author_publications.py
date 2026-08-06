@@ -1,6 +1,6 @@
 import re
 from core.mcp import mcp
-from hal_api.search_author_publications import search_author_publications as _search_author_publications
+from hal_api.api_search_author_publications import search_author_publications as _search_author_publications
 
 DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
 
@@ -15,7 +15,7 @@ def validate_date(date_str: str | None, field_name: str):
 
 
 @mcp.tool()
-async def hal_search_author_publications(
+async def search_author_publications(
     author_name: str,
     start_date: str | None = None,
     end_date: str | None = None,

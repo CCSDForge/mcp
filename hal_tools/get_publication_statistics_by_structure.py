@@ -1,9 +1,9 @@
 from core.mcp import mcp
-from hal_api.search_publication_stats import search_publication_stats
+from hal_api.api_get_publication_statistics_by_structure import search_publication_stats
 
 
 @mcp.tool()
-async def hal_get_publication_stats_by_structure(
+async def get_publication_statistics_by_structure(
     struct_id: int,
     start_year: int,
     end_year: int,

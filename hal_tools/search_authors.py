@@ -1,5 +1,5 @@
 from core.mcp import mcp
-from hal_api.search_authors import search_authors
+from hal_api.api_search_authors import search_authors
 
 
 @mcp.tool()

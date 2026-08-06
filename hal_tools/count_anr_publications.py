@@ -1,6 +1,6 @@
 from datetime import date
 from core.mcp import mcp
-from hal_api.search_publication_anr_open_access import count_anr_publications_logic
+from hal_api.api_count_anr_publications import count_anr_publications_logic
 
 
 @mcp.tool()
