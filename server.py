@@ -1,6 +1,6 @@
 from core.mcp import mcp
 
-import hal_tools.get_anr_publications
+import hal_tools.count_anr_publications
 import hal_tools.get_author_affiliations
 import hal_tools.hal_get_lab_keyword_statistics
 import hal_tools.hal_get_publication_stats_by_structure

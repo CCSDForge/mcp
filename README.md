@@ -30,7 +30,7 @@ Ces outils permettent d’analyser les structures de recherche référencées da
 
 - `search_structures` : recherche des laboratoires, universités et institutions ;
 - `get_publication_statistics_by_structure` : statistiques de production scientifique ;
-- `get_anr_publications` : analyse des publications financées par l’ANR et mesure du niveau d’accès ouvert (*open access*) ;
+- `count_anr_publications` : analyse des publications financées par l’ANR et mesure du niveau d’accès ouvert (*open access*) ;
 - `search_lab_keyword_statistics` : identification des thématiques émergentes via les mots-clés des publications.
 
 ---
@@ -78,16 +78,16 @@ Retourne des statistiques concernant : le nombre de publications ; leur type de 
 | `start_year` | obligatoire | Année de début |
 | `end_year` | obligatoire | Année de fin |
 
-* `get_anr_publications` : Recherche les publications financées par des projets ANR pour une structure de recherche sur une période donnée.
+* `count_anr_publications` : Recherche les publications financées par des projets ANR pour une structure de recherche sur une période donnée.
 Permet également d’analyser leur niveau d’accès ouvert (*open access*).
 Retourne : le nombre de publications financées par l’ANR ; les informations associées aux projets ANR ;
 la part des publications disponibles en accès ouvert.
 
-| Paramètre | Type | Description |
-|---|---|---|
-| `struct_id` | obligatoire | Identifiant HAL de la structure |
-| `start_year` | optionnel | Année de début |
-| `end_year` | optionnel | Année de fin |
+| Paramètre     | Type | Description                           |
+|---------------|---|---------------------------------------|
+| `struct_id`   | obligatoire | Identifiant HAL de la structure       |
+| `start_date`  | optionnel | Date de début                         |
+| `end_date`    | optionnel | Date de fin                           |
 | `open_access` | optionnel | Filtre selon le statut d’accès ouvert |
 
 * `search_lab_keyword_statistics` : Analyse les thématiques émergentes d’une structure de recherche enregistrée dans HAL à partir de la distribution des mots-clés associés aux publications.

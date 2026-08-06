@@ -1,4 +1,5 @@
 import asyncio
+from datetime import date
 import aiohttp
 
 BASE_URL = "https://api.archives-ouvertes.fr/search/"
@@ -7,8 +8,8 @@ BASE_URL = "https://api.archives-ouvertes.fr/search/"
 async def search_publication_anr_open_access(
     open_access: bool | None = None,
     struct_id: int | None = None,
-    start_year: int | None = None,
-    end_year: int | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     rows: int = 10,
 ) -> dict:
     """
@@ -16,6 +17,8 @@ async def search_publication_anr_open_access(
     Retourne un dict avec le nombre total réel de résultats (numFound), la liste
     des publications effectivement récupérées (limitée par `rows`), et la requête
     Solr réellement envoyée (pour vérification/debug).
+
+    start_date / end_date : bornes de date complète (année-mois-jour), incluses.
     """
     query_parts = []
     if struct_id is not None:
@@ -29,17 +32,17 @@ async def search_publication_anr_open_access(
         fq_parts.append("-openAccess_bool:true")
     # si open_access is None : aucun filtre ajouté
 
-    if start_year is not None or end_year is not None:
-        lower = start_year if start_year is not None else "*"
-        upper = end_year if end_year is not None else "*"
-        fq_parts.append(f"publicationDateY_i:[{lower} TO {upper}]")
+    if start_date is not None or end_date is not None:
+        lower = f"{start_date.isoformat()}T00:00:00Z" if start_date else "*"
+        upper = f"{end_date.isoformat()}T23:59:59Z" if end_date else "*"
+        fq_parts.append(f"publicationDate_tdate:[{lower} TO {upper}]")
 
     params = [
         ("q", query),
         ("wt", "json"),
-        ("fl", "publicationDateY_i,docType_s,uri_s,title_s,submitType_s,anrProject_t"),
+        ("fl", "publicationDateY_i,publicationDate_tdate,docType_s,uri_s,title_s,submitType_s,anrProject_t"),
         ("rows", rows),
-        ("sort", "publicationDateY_i desc"),
+        ("sort", "publicationDate_tdate desc"),
     ]
     for fq in fq_parts:
         params.append(("fq", fq))
@@ -50,7 +53,7 @@ async def search_publication_anr_open_access(
             async with session.get(BASE_URL, params=params) as resp:
                 resp.raise_for_status()
                 data = await resp.json()
-                request_url = str(resp.url)  # URL réellement envoyée, avec encodage final
+                request_url = str(resp.url)
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         return {
             "error": f"Échec de la requête HAL : {e}",
@@ -62,10 +65,10 @@ async def search_publication_anr_open_access(
     response = data.get("response", {})
     num_found = response.get("numFound", 0)
     docs = response.get("docs", [])
-
     publications = [
         {
             "publication_year": d.get("publicationDateY_i"),
+            "publication_date": d.get("publicationDate_tdate"),
             "doc_type": d.get("docType_s"),
             "url": d.get("uri_s"),
             "title": (
@@ -83,4 +86,51 @@ async def search_publication_anr_open_access(
         "num_found": num_found,
         "publications": publications,
         "query_url": request_url,
+    }
+
+
+def build_period_applied(start_date: date | None, end_date: date | None) -> str:
+    """
+    Construit une chaîne lisible décrivant la période appliquée aux filtres.
+    """
+    if not start_date and not end_date:
+        return "aucune restriction (toutes dates confondues)"
+    lower = start_date.isoformat() if start_date else "..."
+    upper = end_date.isoformat() if end_date else "..."
+    return f"{lower} – {upper}"
+
+
+async def count_anr_publications_logic(
+    open_access: bool | None = None,
+    struct_id: int | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> dict:
+    """
+    Calcule le nombre de publications HAL financées par l'ANR correspondant
+    aux filtres donnés. Ne récupère aucun document (rows=0), uniquement le compte.
+    """
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise ValueError(f"start_date ({start_date}) must be <= end_date ({end_date})")
+
+    try:
+        result = await search_publication_anr_open_access(
+            open_access=open_access,
+            struct_id=struct_id,
+            start_date=start_date,
+            end_date=end_date,
+            rows=0,
+        )
+    except Exception as e:
+        return {"error": f"Erreur inattendue lors de l'appel à HAL : {e}"}
+
+    if "error" in result:
+        return {"error": result["error"], "query_url": result.get("query_url")}
+
+    return {
+        "total_matching_hal": result["num_found"],
+        "open_access_filter": open_access,
+        "struct_id": struct_id,
+        "period_applied": build_period_applied(start_date, end_date),
+        "query_url": result["query_url"],
     }
